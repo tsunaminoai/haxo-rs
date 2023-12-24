@@ -60,6 +60,23 @@ pub fn deinit(self: *Self) void {
     C.delete_fluid_synth(self.synth);
     C.delete_fluid_settings(self.settings);
 }
+
+pub fn programChange(self: *Self, channel: i32, program: i32) void {
+    _ = C.fluid_synth_program_change(self.synth, channel, program);
+}
+
+pub fn noteOn(self: *Self, channel: i32, key: i32, vel: i32) void {
+    _ = C.fluid_synth_noteon(self.synth, channel, key, vel);
+}
+
+pub fn cc(self: *Self, channel: i32, number: i32, value: i32) void {
+    _ = C.fluid_synth_cc(self.synth, channel, number, value);
+}
+
+pub fn noteOff(self: *Self, channel: i32, key: i32) void {
+    _ = C.fluid_synth_noteoff(self.synth, channel, key);
+}
+
 test "synth" {
     var d = try init("FluidR3_GM.sf2", 1);
     defer d.deinit();

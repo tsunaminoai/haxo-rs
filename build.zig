@@ -15,19 +15,35 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
-    const lib = b.addStaticLibrary(.{
-        .name = "haxo-rs",
+    const cPeriphery = b.addStaticLibrary(.{
+        .name = "cPeriphery",
         // In this case the main source file is merely a path, however, in more
         // complicated build scripts, this could be a generated file.
-        .root_source_file = .{ .path = "src/root.zig" },
         .target = target,
         .optimize = optimize,
     });
+    cPeriphery.addCSourceFiles(.{
+        .files = c_files,
+        .flags = &.{
+            "-O3",
+            "-fPIC",
+            "-g",
+            "-Wall",
+            "-Werror",
+            "-std=gnu99",
+            "-pedantic",
+            // "-Wno-stringop-truncation",
+        },
+    });
+    cPeriphery.linkLibC();
+    cPeriphery.addIncludePath(.{ .path = "../../c/c-periphery/src" });
+    cPeriphery.addSystemIncludePath(.{ .path = "../../c/linux/include" });
+    cPeriphery.addSystemIncludePath(.{ .path = "../../c/mac-linux-headers" });
+    b.installArtifact(cPeriphery);
 
-    // This declares intent for the library to be installed into the standard
-    // location when the user invokes the "install" step (the default step when
-    // running `zig build`).
-    b.installArtifact(lib);
+    const zigpio = b.addModule("zigpio", .{
+        .source_file = .{ .path = "zigpio/src/gpio.zig" },
+    });
 
     const exe = b.addExecutable(.{
         .name = "haxo-rs",
@@ -37,6 +53,8 @@ pub fn build(b: *std.Build) void {
     });
     exe.addSystemIncludePath(.{ .path = "/opt/homebrew/include" });
     exe.linkSystemLibrary("fluidsynth");
+    exe.addModule("zigpio", zigpio);
+    // exe.linkLibrary(i2c);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
@@ -89,6 +107,8 @@ pub fn build(b: *std.Build) void {
     });
     exe.addOptions("audio", audio_options);
     exe_unit_tests.linkSystemLibrary("fluidsynth");
+    exe_unit_tests.addOptions("audio", audio_options);
+    exe_unit_tests.addModule("zigpio", zigpio);
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 
@@ -99,3 +119,17 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_lib_unit_tests.step);
     test_step.dependOn(&run_exe_unit_tests.step);
 }
+
+const c_files = &.{
+    "../../c/c-periphery/src/gpio.c",
+    "../../c/c-periphery/src/gpio_cdev_v1.c",
+    "../../c/c-periphery/src/gpio_cdev_v2.c",
+    "../../c/c-periphery/src/gpio_sysfs.c",
+    "../../c/c-periphery/src/i2c.c",
+    "../../c/c-periphery/src/led.c",
+    "../../c/c-periphery/src/mmio.c",
+    "../../c/c-periphery/src/pwm.c",
+    "../../c/c-periphery/src/serial.c",
+    "../../c/c-periphery/src/spi.c",
+    "../../c/c-periphery/src/version.c",
+};

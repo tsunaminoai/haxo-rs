@@ -1,0 +1,6 @@
+[submodule "zigpio"]
+	path = zigpio
+	url = https://github.com/geo-ant/zigpio.git
+[submodule "I2C"]
+	path = I2C
+	url = https://github.com/TeraHz/I2C.git
