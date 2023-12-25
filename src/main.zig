@@ -60,7 +60,7 @@ pub fn main() !void {
         std.time.sleep(TICK_uSECS * std.time.ns_per_us);
 
         var keys = try ks.scan();
-        var vol: i32 = 50;
+        const vol: i32 = 50;
         const MIDI_CC_VOLUME: i32 = 7;
         synth.cc(0, MIDI_CC_VOLUME, vol);
 

@@ -1,5 +1,6 @@
 const std = @import("std");
 const GPIO = @import("zigpio");
+const cperf = @cImport(@cInclude("periphery/gpio.h"));
 
 const ROWS = &.{ 13, 12, 16, 17, 20, 22, 24 };
 const COLS = &.{ 25, 26, 27 };
@@ -89,7 +90,7 @@ pub fn debug_print(self: *Self, keys: u32) void {
         for (COLS, 0..) |_, j| {
             if (j == 0)
                 std.debug.print("{} ", .{i});
-            var key = self.get_bit_at(keys, i * COLS.len + j);
+            const key = self.get_bit_at(keys, i * COLS.len + j);
             std.debug.print("{c} ", .{if (key) 'x' else 'o'});
         }
         std.debug.print("{} ", .{i});

@@ -36,10 +36,16 @@ pub fn build(b: *std.Build) void {
         },
     });
     cPeriphery.linkLibC();
-    cPeriphery.addIncludePath(.{ .path = "../../c/c-periphery/src" });
-    cPeriphery.addSystemIncludePath(.{ .path = "../../c/linux/include" });
-    cPeriphery.addSystemIncludePath(.{ .path = "../../c/mac-linux-headers" });
+    cPeriphery.addIncludePath(.{ .path = "./c-periphery/src" });
+    cPeriphery.addSystemIncludePath(.{ .path = "/usr/include" });
+
+    // cPeriphery.linkSystemLibrary("linux");
     b.installArtifact(cPeriphery);
+    // b.installDirectory(.{
+    //     .install_dir = .prefix,
+    //     .install_subdir = "include",
+    //     .source_dir = cPeriphery.getEmittedH(),
+    // });
 
     const zigpio = b.addModule("zigpio", .{
         .source_file = .{ .path = "zigpio/src/gpio.zig" },
@@ -52,9 +58,12 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     exe.addSystemIncludePath(.{ .path = "/opt/homebrew/include" });
+    exe.addSystemIncludePath(.{ .path = "/usr/local/include" });
     exe.linkSystemLibrary("fluidsynth");
+    exe.linkSystemLibrary("periphery");
     exe.addModule("zigpio", zigpio);
-    // exe.linkLibrary(i2c);
+    exe.addIncludePath(.{ .path = cPeriphery.getOutputSource() });
+    exe.linkLibrary(cPeriphery);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
@@ -121,15 +130,15 @@ pub fn build(b: *std.Build) void {
 }
 
 const c_files = &.{
-    "../../c/c-periphery/src/gpio.c",
-    "../../c/c-periphery/src/gpio_cdev_v1.c",
-    "../../c/c-periphery/src/gpio_cdev_v2.c",
-    "../../c/c-periphery/src/gpio_sysfs.c",
-    "../../c/c-periphery/src/i2c.c",
-    "../../c/c-periphery/src/led.c",
-    "../../c/c-periphery/src/mmio.c",
-    "../../c/c-periphery/src/pwm.c",
-    "../../c/c-periphery/src/serial.c",
-    "../../c/c-periphery/src/spi.c",
-    "../../c/c-periphery/src/version.c",
+    "./c-periphery/src/gpio.c",
+    "./c-periphery/src/gpio_cdev_v1.c",
+    "./c-periphery/src/gpio_cdev_v2.c",
+    "./c-periphery/src/gpio_sysfs.c",
+    "./c-periphery/src/i2c.c",
+    "./c-periphery/src/led.c",
+    "./c-periphery/src/mmio.c",
+    "./c-periphery/src/pwm.c",
+    "./c-periphery/src/serial.c",
+    "./c-periphery/src/spi.c",
+    "./c-periphery/src/version.c",
 };

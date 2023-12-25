@@ -9,17 +9,17 @@ driver: *C.fluid_audio_driver_t,
 const Self = @This();
 
 pub fn init(sf2File: []const u8, bank: i32) !Self {
-    var settings = if (C.new_fluid_settings()) |s| s else return error.FailedToCreateSettings;
+    const settings = if (C.new_fluid_settings()) |s| s else return error.FailedToCreateSettings;
 
     if (C.fluid_settings_setstr(settings, "audio.driver", AudioConfig.audio_driver.ptr) == C.FLUID_FAILED) return error.Settings;
     if (C.fluid_settings_setint(settings, "audio.periods", 3) == C.FLUID_FAILED) return error.Settings;
     if (C.fluid_settings_setint(settings, "audio.period-size", 64) == C.FLUID_FAILED) return error.Settings;
     if (C.fluid_settings_setint(settings, "audio.realtime-prio", 99) == C.FLUID_FAILED) return error.Settings;
 
-    var syn = if (C.new_fluid_synth(settings)) |s| s else return error.FailedToCreateSynth;
+    const syn = if (C.new_fluid_synth(settings)) |s| s else return error.FailedToCreateSynth;
     C.fluid_synth_set_gain(syn, 1.0);
 
-    var adriver = if (C.new_fluid_audio_driver(settings, syn)) |d| d else return error.FailedToLoadDriver;
+    const adriver = if (C.new_fluid_audio_driver(settings, syn)) |d| d else return error.FailedToLoadDriver;
 
     if (C.fluid_is_soundfont(sf2File.ptr) == 1) {
         if (C.fluid_synth_sfload(syn, sf2File.ptr, 1) == C.FLUID_FAILED)
@@ -30,7 +30,7 @@ pub fn init(sf2File: []const u8, bank: i32) !Self {
     if (C.fluid_synth_program_change(syn, 0, 0) == C.FLUID_FAILED)
         return error.ProgramChange;
 
-    var player = if (C.new_fluid_player(syn)) |p| p else return error.FailedToCreatePlayer;
+    const player = if (C.new_fluid_player(syn)) |p| p else return error.FailedToCreatePlayer;
     defer C.delete_fluid_player(player);
 
     const midiFile = "./midi/startup/Startup_Haxophone.mid";
